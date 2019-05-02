@@ -11,6 +11,8 @@ import android.widget.Toast;
 public class QuizActivity extends AppCompatActivity {
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
+    private static final String KEY_SCORE = "score";
+    private static final String KEY_ANSWERED = "answered";
 
     private Button mTrueButton;
     private Button mFalseButton;
@@ -27,16 +29,14 @@ public class QuizActivity extends AppCompatActivity {
     };
 
     private int mCurrentIndex = 0;
+    private int mCorrectCount = 0;
+    private boolean mIsAnswered = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate(Bundle) called");
         setContentView(R.layout.activity_quiz);
-
-        if (savedInstanceState != null) {
-            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
-        }
 
         mQuestionTextView = findViewById(R.id.question_text_view);
 
@@ -60,11 +60,22 @@ public class QuizActivity extends AppCompatActivity {
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
+                mCurrentIndex++;
                 updateQuestion();
+                mTrueButton.setEnabled(true);
+                mFalseButton.setEnabled(true);
             }
         });
 
+        if (savedInstanceState != null) {
+            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+            mCorrectCount = savedInstanceState.getInt(KEY_SCORE, 0);
+            mIsAnswered = savedInstanceState.getBoolean(KEY_ANSWERED, false);
+            if (mIsAnswered) {
+                mTrueButton.setEnabled(false);
+                mFalseButton.setEnabled(false);
+            }
+        }
         updateQuestion();
     }
 
@@ -89,6 +100,8 @@ public class QuizActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG, "onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
+        savedInstanceState.putInt(KEY_SCORE, mCorrectCount);
+        savedInstanceState.putBoolean(KEY_ANSWERED, mIsAnswered);
     }
 
     @Override
@@ -105,20 +118,33 @@ public class QuizActivity extends AppCompatActivity {
     private void updateQuestion() {
         int question = mQuestionBank[mCurrentIndex].getTextResId();
         mQuestionTextView.setText(question);
+        mIsAnswered = false;
+        if (mCurrentIndex == mQuestionBank.length - 1)
+            mNextButton.setEnabled(false);
     }
 
     private void checkAnswer(boolean userPressedTrue) {
+        mIsAnswered = true;
+        mTrueButton.setEnabled(false);
+        mFalseButton.setEnabled(false);
+
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
 
         int messageResId = 0;
 
         if (userPressedTrue == answerIsTrue) {
             messageResId = R.string.correct_toast;
+            mCorrectCount++;
         } else {
             messageResId = R.string.incorrect_toast;
         }
 
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT)
                 .show();
+
+        if (mCurrentIndex == mQuestionBank.length - 1) {
+            float percent = (float)mCorrectCount / mQuestionBank.length * 100;
+            Toast.makeText(this, "Score: " + percent + "%", Toast.LENGTH_LONG).show();
+        }
     }
 }
