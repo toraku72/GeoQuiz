@@ -11,10 +11,11 @@ import android.widget.TextView;
 public class CheatActivity extends AppCompatActivity {
     private static final String EXTRA_ANSWER_IS_TRUE =
             "com.bignerdranch.android.geoquiz.answer_is_true";
-    private static final String EXTRA_ANSWER_SHOWN =
+    private static final String KEY_EXTRA_ANSWER_SHOWN =
             "com.bignerdranch.android.geoquiz.answer_shown";
 
     private boolean mAnswerIsTrue;
+    private boolean mIsAnswerShown;
 
     private TextView mAnswerTextView;
     private Button mShowAnswerButton;
@@ -26,13 +27,16 @@ public class CheatActivity extends AppCompatActivity {
     }
 
     public static boolean wasAnswerShown(Intent result) {
-        return result.getBooleanExtra(EXTRA_ANSWER_SHOWN, false);
+        return result.getBooleanExtra(KEY_EXTRA_ANSWER_SHOWN, false);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cheat);
+        if (savedInstanceState != null) {
+            mIsAnswerShown = savedInstanceState.getBoolean(KEY_EXTRA_ANSWER_SHOWN, false);
+        }
 
         mAnswerIsTrue = getIntent().getBooleanExtra(EXTRA_ANSWER_IS_TRUE, false);
 
@@ -46,14 +50,26 @@ public class CheatActivity extends AppCompatActivity {
                 } else {
                     mAnswerTextView.setText(R.string.false_button);
                 }
-                setAnswerShownResult(true);
+                mIsAnswerShown = true;
             }
         });
     }
 
     private void setAnswerShownResult(boolean isAnswerShown) {
         Intent data = new Intent();
-        data.putExtra(EXTRA_ANSWER_SHOWN, isAnswerShown);
+        data.putExtra(KEY_EXTRA_ANSWER_SHOWN, isAnswerShown);
         setResult(RESULT_OK, data);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(KEY_EXTRA_ANSWER_SHOWN, mIsAnswerShown);
+    }
+
+    @Override
+    public void onBackPressed() {
+        setAnswerShownResult(mIsAnswerShown);
+        super.onBackPressed();
     }
 }
