@@ -12,6 +12,7 @@ import android.widget.Toast;
 public class QuizActivity extends AppCompatActivity {
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
+    private static final String KEY_CHEAT_TOKENS = "cheat tokens";
     private static final int REQUEST_CODE_CHEAT = 0;
 
     private Button mTrueButton;
@@ -19,6 +20,7 @@ public class QuizActivity extends AppCompatActivity {
     private Button mNextButton;
     private Button mCheatButton;
     private TextView mQuestionTextView;
+    private TextView mCheatTokensTextView;
 
     private Question[] mQuestionBank = new Question[] {
             new Question(R.string.question_australia, true),
@@ -30,6 +32,7 @@ public class QuizActivity extends AppCompatActivity {
     };
 
     private int mCurrentIndex = 0;
+    private int mCheatTokens = 3;
     private boolean mIsCheater;
 
     @Override
@@ -40,6 +43,7 @@ public class QuizActivity extends AppCompatActivity {
 
         if (savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+            mCheatTokens = savedInstanceState.getInt(KEY_CHEAT_TOKENS, 3);
         }
 
         mQuestionTextView = findViewById(R.id.question_text_view);
@@ -81,7 +85,10 @@ public class QuizActivity extends AppCompatActivity {
             }
         });
 
+        mCheatTokensTextView = findViewById(R.id.cheat_tokens_text_view);
+
         updateQuestion();
+        updateCheatTokens();
     }
 
     @Override
@@ -92,6 +99,8 @@ public class QuizActivity extends AppCompatActivity {
             if (data == null) {
                 return; }
             mIsCheater = CheatActivity.wasAnswerShown(data);
+            mCheatTokens--;
+            updateCheatTokens();
         }
     }
 
@@ -116,6 +125,7 @@ public class QuizActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG, "onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
+        savedInstanceState.putInt(KEY_CHEAT_TOKENS, mCheatTokens);
     }
 
     @Override
@@ -151,5 +161,12 @@ public class QuizActivity extends AppCompatActivity {
 
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT)
                 .show();
+    }
+
+    private void updateCheatTokens() {
+        if (mCheatTokens == 0) {
+            mCheatButton.setEnabled(false);
+        }
+        mCheatTokensTextView.setText(getString(R.string.cheat_tokens, mCheatTokens));
     }
 }

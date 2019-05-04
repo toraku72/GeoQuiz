@@ -50,7 +50,7 @@ public class CheatActivity extends AppCompatActivity {
                 } else {
                     mAnswerTextView.setText(R.string.false_button);
                 }
-                setAnswerShownResult(true);
+                setAnswerShownResult();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     int cx = mShowAnswerButton.getWidth() / 2;
                     int cy = mShowAnswerButton.getHeight() / 2;
@@ -70,11 +70,14 @@ public class CheatActivity extends AppCompatActivity {
                 }
             }
         });
+
+        TextView apiLevelTextView = findViewById(R.id.api_level_text_view);
+        apiLevelTextView.setText(getString(R.string.api_level, Build.VERSION.SDK_INT));
     }
 
-    private void setAnswerShownResult(boolean isAnswerShown) {
+    private void setAnswerShownResult() {
         Intent data = new Intent();
-        data.putExtra(EXTRA_ANSWER_SHOWN, isAnswerShown);
+        data.putExtra(EXTRA_ANSWER_SHOWN, true);
         setResult(RESULT_OK, data);
     }
 }
